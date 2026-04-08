@@ -1,0 +1,182 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model Project {
+  id          String   @id @default(cuid())
+  name        String
+  projectType String?
+  description String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  risks       Risk[]
+  sessions    Session[]
+}
+
+model Risk {
+  id           String   @id @default(cuid())
+  projectId    String
+  riskNumber   Int
+  title        String
+  description  String
+  riskType     String   // Strategic/Operational/External
+  riskCategory String   // People & HR / IT & Cyber / Financial / Legal & Compliance / Environmental & Sustainability / Supplier & Third party / Customer & Market
+  status       String   // New/Active/Escalated/Closed
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  project      Project  @relation(fields: [projectId], references: [id])
+  sessionRisks SessionRisk[]
+}
+
+model Session {
+  id               String    @id @default(cuid())
+  projectId        String
+  name             String
+  description      String?
+  joinCode         String    @unique
+  currentStep      String    // RISK_REVIEW | PRE_SCREENING | VOTING | RESULTS | ANALYSIS | ACTIONS | GOVERNANCE | LOCKED
+  status           String    // DRAFT | ACTIVE | COMPLETED | LOCKED
+  createdAt        DateTime  @default(now())
+  updatedAt        DateTime  @updatedAt
+  lockedAt         DateTime?
+  facilitatorName  String
+  facilitatorToken String
+
+  project          Project   @relation(fields: [projectId], references: [id])
+  participants     Participant[]
+  sessionRisks     SessionRisk[]
+  votes            Vote[]
+  prescreenVotes   PrescreenVote[]
+  riskAssignments  RiskAssignment[]
+  snapshots        Snapshot[]
+}
+
+model Participant {
+  id               String   @id @default(cuid())
+  sessionId        String
+  displayName      String
+  role             String   // FACILITATOR/PARTICIPANT/VIEWER
+  participantToken String
+  anonToken        String?
+  joinedAt         DateTime @default(now())
+
+  session          Session  @relation(fields: [sessionId], references: [id])
+
+  @@unique([sessionId, participantToken])
+}
+
+model SessionRisk {
+  id         String   @id @default(cuid())
+  sessionId  String
+  riskId     String
+  riskNumber Int
+  included   Boolean
+
+  session    Session  @relation(fields: [sessionId], references: [id])
+  risk       Risk     @relation(fields: [riskId], references: [id])
+  votes      Vote[]
+  prescreenVotes PrescreenVote[]
+  riskAssignments RiskAssignment[]
+
+  @@unique([sessionId, riskId])
+}
+
+model Vote {
+  id            String   @id @default(cuid())
+  sessionId     String
+  sessionRiskId String
+  tokenHash     String
+  impact        Int?
+  likelihood    Int?
+  abstained     Boolean
+  submittedAt   DateTime @default(now())
+
+  session       Session     @relation(fields: [sessionId], references: [id])
+  sessionRisk   SessionRisk @relation(fields: [sessionRiskId], references: [id])
+
+  @@unique([sessionRiskId, tokenHash])
+}
+
+model PrescreenVote {
+  id            String   @id @default(cuid())
+  sessionId     String
+  sessionRiskId String
+  tokenHash     String
+  include       Boolean
+  submittedAt   DateTime @default(now())
+
+  session       Session     @relation(fields: [sessionId], references: [id])
+  sessionRisk   SessionRisk @relation(fields: [sessionRiskId], references: [id])
+
+  @@unique([sessionRiskId, tokenHash])
+}
+
+model RiskAssignment {
+  id                     String   @id @default(cuid())
+  sessionId              String
+  sessionRiskId          String
+  ownerName              String
+  ownerEmail             String?
+  causeTrigger           String?
+  timeHorizon            String?
+  mitigationStrategy     String   // Avoid | Mitigate | Transfer | Accept | AcceptWithMonitoring
+  currentControls        String?
+  controlEffectiveness   String?
+  mitigationActions      String   // JSON array
+  status                 String   // NotStarted | InProgress | Done | Blocked
+  residualImpact         Int?
+  residualLikelihood     Int?
+  earlyWarningIndicators String?
+
+  session                Session     @relation(fields: [sessionId], references: [id])
+  sessionRisk            SessionRisk @relation(fields: [sessionRiskId], references: [id])
+  ltDecisions            LTDecision[]
+
+  @@unique([sessionId, sessionRiskId])
+}
+
+model LTDecision {
+  id               String    @id @default(cuid())
+  riskAssignmentId String
+  decision         String    // Accept | AcceptWithMonitoring | AdditionalMitigationRequired | Escalate | Close
+  decisionDate     DateTime
+  decisionOwner    String
+  nextReviewDate   DateTime?
+  notes            String?
+
+  riskAssignment   RiskAssignment @relation(fields: [riskAssignmentId], references: [id])
+}
+
+model Snapshot {
+  id        String   @id @default(cuid())
+  sessionId String
+  step      String
+  version   Int
+  data      String   // JSON blob
+  createdAt DateTime @default(now())
+
+  session   Session  @relation(fields: [sessionId], references: [id])
+
+  @@unique([sessionId, version])
+}
+
+model AuditEvent {
+  id         String   @id @default(cuid())
+  sessionId  String?
+  projectId  String?
+  action     String
+  actorRole  String
+  actorId    String?
+  metadata   String   // JSON
+  timestamp  DateTime @default(now())
+}
