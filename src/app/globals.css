@@ -1,26 +1,158 @@
 @import "tailwindcss";
 
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  /* Claude Design System - Light Mode */
+  --background: #FAF9F5;
+  --foreground: #1D1B18;
+  --surface: #FFFFFF;
+  --surface-secondary: #F3EFE6;
+  --surface-tertiary: #EBE5D9;
+
+  /* Accent - Claude's signature terracotta */
+  --accent: #C96442;
+  --accent-hover: #B5573A;
+  --accent-light: #F5E0D6;
+  --accent-foreground: #FFFFFF;
+
+  /* Text */
+  --text-primary: #1D1B18;
+  --text-secondary: #6B655B;
+  --text-tertiary: #9C9589;
+  --text-on-accent: #FFFFFF;
+
+  /* Borders */
+  --border: #E5DFD3;
+  --border-strong: #D1C9B8;
+  --ring: #C96442;
+
+  /* Status */
+  --success: #3D8C5C;
+  --success-light: #E3F3E8;
+  --warning: #C4880D;
+  --warning-light: #FEF5E0;
+  --danger: #C43D3D;
+  --danger-light: #FDE8E8;
+  --info: #3D6EC4;
+  --info-light: #E3ECF8;
+
+  /* Shadows */
+  --shadow-sm: 0 1px 2px rgba(29, 27, 24, 0.05);
+  --shadow-md: 0 4px 12px rgba(29, 27, 24, 0.08);
+  --shadow-lg: 0 8px 24px rgba(29, 27, 24, 0.12);
+
+  /* Radius */
+  --radius-sm: 6px;
+  --radius-md: 10px;
+  --radius-lg: 14px;
+  --radius-xl: 20px;
+  --radius-full: 9999px;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --background: #1A1816;
+    --foreground: #F0EBE1;
+    --surface: #242220;
+    --surface-secondary: #2E2B28;
+    --surface-tertiary: #3A3734;
+
+    --accent: #DA7756;
+    --accent-hover: #E58A6B;
+    --accent-light: #3A2A22;
+    --accent-foreground: #FFFFFF;
+
+    --text-primary: #F0EBE1;
+    --text-secondary: #A39D93;
+    --text-tertiary: #7A756C;
+    --text-on-accent: #FFFFFF;
+
+    --border: #3A3734;
+    --border-strong: #4A4744;
+    --ring: #DA7756;
+
+    --success: #5AB87A;
+    --success-light: #1E2E23;
+    --warning: #E0A430;
+    --warning-light: #2E2616;
+    --danger: #E05555;
+    --danger-light: #2E1A1A;
+    --info: #5B8EE0;
+    --info-light: #1A2430;
+
+    --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.2);
+    --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.3);
+    --shadow-lg: 0 8px 24px rgba(0, 0, 0, 0.4);
+  }
 }
 
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
-}
-
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+  --color-surface: var(--surface);
+  --color-surface-secondary: var(--surface-secondary);
+  --color-surface-tertiary: var(--surface-tertiary);
+  --color-accent: var(--accent);
+  --color-accent-hover: var(--accent-hover);
+  --color-accent-light: var(--accent-light);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-text-primary: var(--text-primary);
+  --color-text-secondary: var(--text-secondary);
+  --color-text-tertiary: var(--text-tertiary);
+  --color-border: var(--border);
+  --color-border-strong: var(--border-strong);
+  --color-ring: var(--ring);
+  --color-success: var(--success);
+  --color-success-light: var(--success-light);
+  --color-warning: var(--warning);
+  --color-warning-light: var(--warning-light);
+  --color-danger: var(--danger);
+  --color-danger-light: var(--danger-light);
+  --color-info: var(--info);
+  --color-info-light: var(--info-light);
+  --font-sans: "Inter", "Segoe UI", "Helvetica Neue", Arial, sans-serif;
+  --font-mono: "SF Mono", "Cascadia Code", "Fira Code", "Consolas", monospace;
 }
 
 body {
   background: var(--background);
   color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  font-family: var(--font-sans);
+}
+
+/* Smooth transitions for interactive elements */
+*,
+*::before,
+*::after {
+  border-color: var(--border);
+}
+
+/* Selection styling */
+::selection {
+  background-color: var(--accent-light);
+  color: var(--text-primary);
+}
+
+/* Focus ring styling */
+:focus-visible {
+  outline: 2px solid var(--ring);
+  outline-offset: 2px;
+}
+
+/* Scrollbar styling for webkit browsers */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: var(--surface-secondary);
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--border-strong);
+  border-radius: var(--radius-full);
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--text-tertiary);
 }
