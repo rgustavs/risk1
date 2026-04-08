@@ -14,6 +14,7 @@ export default function Home() {
   const [name, setName] = useState('')
   const [description, setDescription] = useState('')
   const [creating, setCreating] = useState(false)
+  const [error, setError] = useState<string | null>(null)
 
   const fetchProjects = async () => {
     try {
@@ -38,6 +39,7 @@ export default function Home() {
     if (!name) return
 
     setCreating(true)
+    setError(null)
     try {
       const res = await fetch('/api/projects', {
         method: 'POST',
@@ -49,8 +51,12 @@ export default function Home() {
         setName('')
         setDescription('')
         fetchProjects()
+      } else {
+        const data = await res.json().catch(() => null)
+        setError(data?.error?.toString() || 'Failed to create project')
       }
     } catch (error) {
+      setError('Network error — is the server running?')
       console.error('Failed to create project', error)
     } finally {
       setCreating(false)
@@ -94,7 +100,10 @@ export default function Home() {
                   />
                 </div>
               </CardContent>
-              <CardFooter>
+              <CardFooter className="flex-col gap-2">
+                {error && (
+                  <p className="text-sm text-destructive w-full">{error}</p>
+                )}
                 <Button type="submit" disabled={creating || !name} className="w-full">
                   {creating ? 'Creating...' : <><PlusCircle className="mr-2 h-4 w-4" /> Create Project</>}
                 </Button>

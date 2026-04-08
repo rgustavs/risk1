@@ -1,11 +1,30 @@
 import { NextResponse } from 'next/server'
 import { db } from '@/lib/db'
 import { z } from 'zod'
+import { Prisma } from '@prisma/client'
 
 const CreateProjectSchema = z.object({
   name: z.string().min(1, 'Name is required'),
   description: z.string().optional(),
 })
+
+function handlePrismaError(error: unknown): NextResponse {
+  if (error instanceof Prisma.PrismaClientInitializationError) {
+    console.error('Database connection failed:', error.message)
+    return NextResponse.json(
+      { error: 'Database connection failed. Check DATABASE_URL configuration.' },
+      { status: 503 }
+    )
+  }
+  if (error instanceof Prisma.PrismaClientKnownRequestError) {
+    console.error('Database request error:', error.code, error.message)
+    return NextResponse.json(
+      { error: 'Database request failed' },
+      { status: 500 }
+    )
+  }
+  return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
+}
 
 export async function GET() {
   try {
@@ -15,7 +34,7 @@ export async function GET() {
     return NextResponse.json(projects)
   } catch (error) {
     console.error('Error fetching projects:', error)
-    return NextResponse.json({ error: 'Failed to fetch projects' }, { status: 500 })
+    return handlePrismaError(error)
   }
 }
 
@@ -37,6 +56,6 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: error.issues }, { status: 400 })
     }
     console.error('Error creating project:', error)
-    return NextResponse.json({ error: 'Failed to create project' }, { status: 500 })
+    return handlePrismaError(error)
   }
 }
